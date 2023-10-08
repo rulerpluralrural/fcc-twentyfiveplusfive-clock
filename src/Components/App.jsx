@@ -27,45 +27,51 @@ export default class Counter extends React.Component {
 			breakSeconds: 0,
 			isBreakFinished: true,
 		};
-		this.audioRef = createRef()
+		this.audioRef = createRef();
 
 		this.increaseBreak = () => {
 			if (this.state.breakLength >= 60) return;
 			if (!this.state.isPaused) return;
-			this.setState({
-				breakLength: this.state.breakLength + 1,
-				breakMinutes: this.state.breakLength + 1,
-			});
+			this.setState((state) => ({
+				breakLength: state.breakLength + 1,
+				breakMinutes: state.breakLength + 1,
+				breakSeconds: 0,
+			}));
 		};
 
 		this.decreaseBreak = () => {
 			if (this.state.breakLength <= 1) return;
 			if (!this.state.isPaused) return;
-			this.setState({
-				breakLength: this.state.breakLength - 1,
-				breakMinutes: this.state.breakLength - 1,
-			});
+			this.setState((state) => ({
+				breakLength: state.breakLength - 1,
+				breakMinutes: state.breakLength - 1,
+				breakSeconds: 0,
+			}));
 		};
 
 		this.increaseSession = () => {
 			if (this.state.sessionLength >= 60) return;
 			if (!this.state.isPaused) return;
-			this.setState({
-				sessionLength: this.state.sessionLength + 1,
-				sessionMinutes: this.state.sessionLength + 1,
-			});
+			this.setState((state) => ({
+				sessionLength: state.sessionLength + 1,
+				sessionMinutes: state.sessionLength + 1,
+				sessionSeconds: 0,
+			}));
 		};
 
 		this.decreaseSession = () => {
 			if (this.state.sessionLength <= 1) return;
 			if (!this.state.isPaused) return;
-			this.setState({
-				sessionLength: this.state.sessionLength - 1,
-				sessionMinutes: this.state.sessionLength - 1,
-			});
+			this.setState((state) => ({
+				sessionLength: state.sessionLength - 1,
+				sessionMinutes: state.sessionLength - 1,
+				sessionSeconds: 0,
+			}));
 		};
 
 		this.resetClock = () => {
+			this.audioRef.current.pause();
+			this.audioRef.current.currentTime = 0;
 			this.setState({
 				isPaused: true,
 				sessionLength: 25,
@@ -74,72 +80,74 @@ export default class Counter extends React.Component {
 				breakLength: 5,
 				breakMinutes: 25,
 				breakSeconds: 0,
+				isBreakFinished: true,
+				isSessionFinished: false,
 			});
 		};
 
 		this.startSession = () => {
-			this.setState({
-				isPaused: !this.state.isPaused,
-			});
+			this.setState((state) => ({
+				isPaused: !state.isPaused,
+			}));
 		};
 
 		this.stopSession = () => {
-			this.setState({
-				isPaused: !this.state.isPaused,
-			});
+			this.setState((state) => ({
+				isPaused: !state.isPaused,
+			}));
 		};
 
 		this.startSessionCount = () => {
 			if (this.state.isPaused) return;
 			if (!this.state.isBreakFinished) return;
 			if (this.state.sessionMinutes === 0 && this.state.sessionSeconds === 0) {
-				this.setState({
+				this.setState((state) => ({
 					isSessionFinished: true,
 					isBreakFinished: false,
-					sessionMinutes: this.state.sessionLength,
-				});
-				this.audioRef.current.play()
+					sessionMinutes: state.sessionLength,
+				}));
+				this.audioRef.current.play();
 				return;
 			}
 			if (this.state.sessionSeconds <= 0) {
-				this.setState({
+				this.setState((state) => ({
 					sessionSeconds: 59,
-					sessionMinutes: this.state.sessionLength - 1,
-				});
+					sessionMinutes: state.sessionMinutes - 1,
+				}));
 				return;
 			}
-			this.setState({
-				sessionSeconds: this.state.sessionSeconds - 1,
-			});
+			this.setState((state) => ({
+				sessionSeconds: state.sessionSeconds - 1,
+			}));
 		};
 
 		this.startBreakCount = () => {
 			if (this.state.isPaused) return;
 			if (!this.state.isSessionFinished) return;
 			if (this.state.breakMinutes === 0 && this.state.breakSeconds === 0) {
-				this.setState({
+				this.setState((state) => ({
 					isBreakFinished: true,
 					isSessionFinished: false,
-					breakMinutes: this.state.breakLength,
-				});
-				this.audioRef.current.play()
+					breakMinutes: state.breakLength,
+				}));
+				this.audioRef.current.play();
 				return;
 			}
 			if (this.state.breakSeconds <= 0) {
-				this.setState({
+				this.setState((state) => ({
 					breakSeconds: 59,
-					breakMinutes: this.state.breakLength - 1,
-				});
+					breakMinutes: state.breakMinutes - 1,
+				}));
 				return;
 			}
-			this.setState({
-				breakSeconds: this.state.breakSeconds - 1,
-			});
+			this.setState((state) => ({
+				breakSeconds: state.breakSeconds - 1,
+			}));
 		};
-
 		setInterval(this.startSessionCount, 1000);
 		setInterval(this.startBreakCount, 1000);
 	}
+
 	render() {
 		return (
 			<div
@@ -236,7 +244,11 @@ export default class Counter extends React.Component {
 					</div>
 				</div>
 				<div>
-					<audio id="beep" ref={this.audioRef} src="https://raw.githubusercontent.com/freeCodeCamp/cdn/master/build/testable-projects-fcc/audio/BeepSound.wav"></audio>
+					<audio
+						id="beep"
+						ref={this.audioRef}
+						src="https://raw.githubusercontent.com/freeCodeCamp/cdn/master/build/testable-projects-fcc/audio/BeepSound.wav"
+					></audio>
 				</div>
 			</div>
 		);
